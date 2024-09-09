@@ -1,0 +1,77 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - application-tier/**
+      - presentation-tier/**
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  REGION: 'us-east-1'
+  ECR_APPLICATION_REPO_NAME: 'ha-app-application-tier'
+  ECR_PRESENTATION_REPO_NAME: 'ha-app-presentation-tier'
+
+env:
+  AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+  AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+
+stages:
+  - stage: BuildAndPush
+    jobs:
+      - job: BuildAndPushToECR
+        displayName: Build and Push Docker Images to AWS ECR
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.x'
+              addToPath: true
+          
+          # Install dependencies: AWS CLI, jq
+          - script: |
+              echo "Installing AWS CLI v2 and jq"
+              sudo apt-get update
+              sudo apt-get install -y awscli jq
+            displayName: 'Install AWS CLI and jq'
+
+          # Login to AWS ECR
+          - script: |
+              echo "Logging in to AWS ECR"
+              ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+              aws ecr get-login-password --region $(REGION) | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.$(REGION).amazonaws.com
+            displayName: 'Login to AWS ECR'
+
+          # Create application-tier ECR repository if it doesn't exist
+          - script: |
+              echo "Creating ECR repository for application-tier"
+              aws ecr describe-repositories --repository-names $(ECR_APPLICATION_REPO_NAME) || aws ecr create-repository --repository-name $(ECR_APPLICATION_REPO_NAME)
+            displayName: 'Create Application ECR Repository'
+
+          # Create presentation-tier ECR repository if it doesn't exist
+          - script: |
+              echo "Creating ECR repository for presentation-tier"
+              aws ecr describe-repositories --repository-names $(ECR_PRESENTATION_REPO_NAME) || aws ecr create-repository --repository-name $(ECR_PRESENTATION_REPO_NAME)
+            displayName: 'Create Presentation ECR Repository'
+
+          # Build and push application-tier Docker image
+          - script: |
+              echo "Building and pushing application-tier Docker image"
+              cd application-tier/
+              ECR_APPLICATION_TIER_REPO=$(aws ecr describe-repositories --repository-names $(ECR_APPLICATION_REPO_NAME) | jq -r '.repositories[0].repositoryUri')
+              docker build -t ha-app-application-tier .
+              docker tag ha-app-application-tier:latest $ECR_APPLICATION_TIER_REPO:latest
+              docker push $ECR_APPLICATION_TIER_REPO:latest
+            displayName: 'Build and Push Application-Tier Docker Image'
+
+          # Build and push presentation-tier Docker image
+          - script: |
+              echo "Building and pushing presentation-tier Docker image"
+              cd ../presentation-tier/
+              ECR_PRESENTATION_TIER_REPO=$(aws ecr describe-repositories --repository-names $(ECR_PRESENTATION_REPO_NAME) | jq -r '.repositories[0].repositoryUri')
+              docker build -t ha-app-presentation-tier .
+              docker tag ha-app-presentation-tier:latest $ECR_PRESENTATION_TIER_REPO:latest
+              docker push $ECR_PRESENTATION_TIER_REPO:latest
+            displayName: 'Build and Push Presentation-Tier Docker Image'

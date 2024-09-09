@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging into Amazon ECR..."
+      - aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-account-id>.dkr.ecr.<your-region>.amazonaws.com
+      - IMAGE_URI=<your-account-id>.dkr.ecr.<your-region>.amazonaws.com/application-tier
+  build:
+    commands:
+      - echo "Building Docker image for application-tier..."
+      - docker build -t application-tier .
+      - docker tag application-tier:latest $IMAGE_URI:latest
+  post_build:
+    commands:
+      - echo "Pushing Docker image to ECR..."
+      - docker push $IMAGE_URI:latest
+artifacts:
+  files:
+    - '**/*'

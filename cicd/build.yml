@@ -14,10 +14,9 @@ variables:
   REGION: 'us-east-1'
   ECR_APPLICATION_REPO_NAME: 'ha-app-application-tier'
   ECR_PRESENTATION_REPO_NAME: 'ha-app-presentation-tier'
-
-env:
   AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
   AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+
 
 stages:
   - stage: BuildAndPush

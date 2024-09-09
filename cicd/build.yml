@@ -14,9 +14,6 @@ variables:
   REGION: 'us-east-1'
   ECR_APPLICATION_REPO_NAME: 'ha-app-application-tier'
   ECR_PRESENTATION_REPO_NAME: 'ha-app-presentation-tier'
-  AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-  AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-
 
 stages:
   - stage: BuildAndPush
@@ -39,6 +36,8 @@ stages:
           # Login to AWS ECR
           - script: |
               echo "Logging in to AWS ECR"
+              export AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)
+              export AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
               ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
               aws ecr get-login-password --region $(REGION) | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.$(REGION).amazonaws.com
             displayName: 'Login to AWS ECR'
@@ -46,12 +45,16 @@ stages:
           # Create application-tier ECR repository if it doesn't exist
           - script: |
               echo "Creating ECR repository for application-tier"
+              export AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)
+              export AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
               aws ecr describe-repositories --repository-names $(ECR_APPLICATION_REPO_NAME) || aws ecr create-repository --repository-name $(ECR_APPLICATION_REPO_NAME)
             displayName: 'Create Application ECR Repository'
 
           # Create presentation-tier ECR repository if it doesn't exist
           - script: |
               echo "Creating ECR repository for presentation-tier"
+              export AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)
+              export AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
               aws ecr describe-repositories --repository-names $(ECR_PRESENTATION_REPO_NAME) || aws ecr create-repository --repository-name $(ECR_PRESENTATION_REPO_NAME)
             displayName: 'Create Presentation ECR Repository'
 
@@ -59,6 +62,8 @@ stages:
           - script: |
               echo "Building and pushing application-tier Docker image"
               cd application-tier/
+              export AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)
+              export AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
               ECR_APPLICATION_TIER_REPO=$(aws ecr describe-repositories --repository-names $(ECR_APPLICATION_REPO_NAME) | jq -r '.repositories[0].repositoryUri')
               docker build -t ha-app-application-tier .
               docker tag ha-app-application-tier:latest $ECR_APPLICATION_TIER_REPO:latest
@@ -69,6 +74,8 @@ stages:
           - script: |
               echo "Building and pushing presentation-tier Docker image"
               cd ../presentation-tier/
+              export AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)
+              export AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
               ECR_PRESENTATION_TIER_REPO=$(aws ecr describe-repositories --repository-names $(ECR_PRESENTATION_REPO_NAME) | jq -r '.repositories[0].repositoryUri')
               docker build -t ha-app-presentation-tier .
               docker tag ha-app-presentation-tier:latest $ECR_PRESENTATION_TIER_REPO:latest

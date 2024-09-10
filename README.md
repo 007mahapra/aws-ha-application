@@ -1,6 +1,5 @@
 # Three Tier Infra on AWS - with Automated Build of Application and Deployment 
-This project demonstrates creation of three tier architecutre on AWS Cloud. It has following architecture 
-
+This project demonstrates creation of three tier architecutre on AWS Cloud. It has following architecture :
 
 ## High Level Architecture
 1. **Application Tier** - This tier consists of the application code. It is built using ExpressJS framework and it serves API endpoints.
@@ -81,30 +80,30 @@ Here  are the steps in the pipeline:
 
 7. Monitor the pipeline in Azure DevOps and wait for it to complete.
 
-![Monitor Pipeline](docs/monitor-pipeline.png)
+   ![Monitor Pipeline](docs/monitor-pipeline.png)
 
 8. Successful run of pipeline will look like this:
 
    **Overall**
+
    ![Successful run of pipeline](docs/successful-pipeline-1.png)
 
    **Stage 1 - Build and push the docker images to ECR - Successful run of pipeline**
+
    ![Stage1 - Build Application](docs/successful-pipeline-stage-1.png)
 
+
    **Stage 2 - Deplpy the infrastructure and application - Successful run of pipeline**
+
    ![Stage2 - Terraform Operations](docs/successful-pipeline-stage-2.png)
 
-9. You can see the successful run of the pipeline generates the artifacts in the artifacts folder , Terraform plan in [plain text](docs/plan.txt)
-.
+9. You can see the successful run of the pipeline generates the artifacts in the artifacts folder , Terraform plan in [plain text](docs/plan.txt).
 
-![Click on Artifacts](docs/artifacts.png)
-![View Artifacts - Plan File](docs/artifacts2.png)
-
-
-**Note** : I am not deploying the infrastructure here purposly as it will cost money , I have already tested it  and the results are attached as well , refer section for results - Running manually on your local machine.
+   ![Click on Artifacts](docs/artifacts.png)
+   ![View Artifacts - Plan File](docs/artifacts2.png)
 
 
-
+    **Note** : I am not deploying the infrastructure here purposly as it will cost money , I have already tested it  and the results are attached as well , refer section for results - Running manually on your local machine.
 
 
 
@@ -112,66 +111,73 @@ Here  are the steps in the pipeline:
 
 ### Prerequisites
 1. Install the following tools:
-  - [Terraform](https://www.terraform.io/downloads.html) (Tested on v1.5.7)
-  - [AWS CLI](https://docs.aws.amazon.com/cli/latest/us/cli/latest/userguide/getting-started-install.html)   (Version 2.13.29)
-  - [Docker](https://docs.docker.com/get-docker/)
-  - [JQ](https://stedolan.github.io/jq/download/)
+   - [Terraform](https://www.terraform.io/downloads.html) (Tested on v1.5.7)
+   - [AWS CLI](https://docs.aws.amazon.com/cli/latest/us/cli/latest/userguide/getting-started-install.html)   (Version 2.13.29)
+   - [Docker](https://docs.docker.com/get-docker/)
+   - [JQ](https://stedolan.github.io/jq/download/)
 
 2. Setup the envirnonment variables (I created a User in AWS and created a access key and secret key for that user and assigned appropriate permissions so it can create the infrastructure.):
 **Warning**: Do not commit the access key and secret key to the repository. Do not use the root user's access key and secret key.
 
- **For Linux/Mac:**
+   **For Linux/Mac:**
+     ```bash
+     export AWS_ACCESS_KEY_ID='<YOUR-AWS-ACCESS-KEY-ID>'
+     export AWS_SECRET_ACCESS_KEY='<YOUR-AWS-ACCESS-KEY-SECRET>'
+     export AWS_DEFAULT_REGION='us-east-1' # Replace with your desired region
+     ```
+  
+   **For Windows in Powershell:**
+     ```powershell
+     set AWS_ACCESS_KEY_ID='<YOUR-AWS-ACCESS-KEY-ID>'
+     set AWS_SECRET_ACCESS_KEY='<YOUR-AWS-ACCESS-KEY-SECRET>'
+     set AWS_DEFAULT_REGION='us-east-1' # Replace with your desired region
+   ```
+
+3. Create docker images for both web and app tiers and push them to AWS ECR
    ```bash
-   export AWS_ACCESS_KEY_ID='<YOUR-AWS-ACCESS-KEY-ID>'
-   export AWS_SECRET_ACCESS_KEY='<YOUR-AWS-ACCESS-KEY-SECRET>'
-   export AWS_DEFAULT_REGION='us-east-1' # Replace with your desired region
+   chmod +x ./deploy-ecr-images.sh
+   ./deploy-ecr-images.sh
    ```
 
- **For Windows in Powershell:**
-   ```powershell
-   set AWS_ACCESS_KEY_ID='<YOUR-AWS-ACCESS-KEY-ID>'
-   set AWS_SECRET_ACCESS_KEY='<YOUR-AWS-ACCESS-KEY-SECRET>'
-   set AWS_DEFAULT_REGION='us-east-1' # Replace with your desired region
+4. Deploy the Terraform infrastructure
+   ```bash
+   cd terraform/
+   terraform init # Initialize the Terraform backend
+   terraform plan # Plan the infrastructure
+   terraform apply # Apply the infrastructure
+   ```
+    Apply output:
+    ![alt text](docs/apply-output.png)
+
+
+5. Access the application on web browser using ALB DNS name
+   - Accessing the presentation layer - This demonstrate the application is working and web is serving the pages. <br>
+     To view the application, open the following URL in your browser: http://front-end-lb-***.us-east-1.elb.amazonaws.com/
+     ![Accesing the Application](docs/app1.png)
+
+     <br>
+  
+   - Accessing the application & database - This demonstrate the database is working and the data is being stored in the database.<br>
+     Initialize Database using API in application tier and see the output in the presentation layer.<br>
+     To initialize the database, open the following URL in your browser: http://front-end-lb-***.us-east-1.elb.amazonaws.com/init
+      ![Initialize Database and see the output](docs/app2.png)
+  
+
+   - Reading the data from the database - This demonstrate the data is being stored in the database
+     Get intialized data from database using API in application tier and see the output in the presentation layer.
+     To view the users, open the following URL in your browser:
+     http://front-end-lb-***.us-east-1.elb.amazonaws.com/users
+      ![Show data](docs/app3.png)
+  
+
+6. Destroy the Terraform infrastructure
+   ```bash
+   cd terraform/
+   terraform destroy # Destroy the infrastructure
    ```
 
-2. Create docker images for both web and app tiers and push them to AWS ECR
-```bash
-chmod +x ./deploy-ecr-images.sh
-./deploy-ecr-images.sh
-```
-
-3. Deploy the Terraform infrastructure
-```bash
-cd terraform/
-terraform init # Initialize the Terraform backend
-terraform plan # Plan the infrastructure
-terraform apply # Apply the infrastructure
-```
- Apply output:
- ![alt text](docs/apply-output.png)
-
-
-
-4. Access the application on web browser using ALB DNS name
-```
-To view the application, open the following URL in your browser:
-   http://<ALB-DNS>/ 
-
-To initialize the database, open the following URL in your browser:
-   http://<ALB-DNS>/init
-
-To view the users, open the following URL in your browser:
-  http://<ALB-DNS>/users
-```
-
-5. Deploy the Terraform infrastructure
-```bash
-cd terraform/
-terraform destroy # Destroy the infrastructure
-```
-
-6. Delete the ECR images
-```bash
-chmod +x ./destroy-ecr-images.sh
-./destroy-ecr-images.sh
-```
+7. Delete the ECR images
+  ```bash
+  chmod +x ./destroy-ecr-images.sh
+  ./destroy-ecr-images.sh
+  ```

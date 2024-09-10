@@ -22,7 +22,15 @@ Any changes in the above folders will trigger this pipeline as there are changes
 
 
 ## Running manually
-1. Create docker images for both web and app layers and push them to ECR
+
+### Prerequisites
+1. Install the following tools:
+  - [Terraform](https://www.terraform.io/downloads.html)
+  - [AWS CLI](https://docs.aws.amazon.com/cli/latest/us/cli/latest/userguide/getting-started-install.html)  
+  - [Docker](https://docs.docker.com/get-docker/)
+  - [JQ](https://stedolan.github.io/jq/download/)
+
+1. Create docker images for both web and app tiers and push them to AWS ECR
 ```bash
 chmod +x ./deploy-ecr-images.sh
 ./deploy-ecr-images.sh

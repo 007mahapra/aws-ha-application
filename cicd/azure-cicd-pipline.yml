@@ -116,7 +116,7 @@ stages:
               unzip terraform_1.5.7_linux_amd64.zip
           
               # Move Terraform to a directory in the system PATH
-              sudo mv terraform /usr/local/bin/
+              sudo mv -f terraform /usr/local/bin/
           
               # Ensure Terraform is executable
               sudo chmod +x /usr/local/bin/terraform

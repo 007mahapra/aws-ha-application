@@ -64,8 +64,10 @@ Here  are the steps in the pipeline:
 2. Push the code to any of SCM , I used Github and created a repo in Github.
 3. Create a new project in Azure DevOps and authenticate Github and connect it to the repository. Refer to Github connector for authenticating Github [this](https://learn.microsoft.com/en-us/azure/devops/cross-service/github-integration?view=azure-devops) , [Reference](https://dev.to/pwd9000/integrating-azure-devops-with-github-hybrid-model-3pkg)
 
+    ![Github Authentication](docs/github-connect.png)
+
 4. Create a new pipeline in Azure DevOps and select the repository and the branch to be used. Refer screenshot below:
-![Creating Azure Pipeline](docs/select-branch.png)
+   ![Manual Run of pipeline](docs/manual-pipeline-trigger.png)
 5. Set Variables in Azure DevOps for the following:
     ```bash    
     - AWS_ACCESS_KEY_ID - Secret variable
@@ -77,12 +79,36 @@ Here  are the steps in the pipeline:
 6. Manually Run the pipeline by choosing the branch, but by default it will run the pipeline on the main branch when there is a push to the main branch.
    ![Manual Run of pipeline](docs/manual-pipeline-trigger.png)
 
-7. Successful run of pipeline will look like this:
-![Successful run of pipeline](docs/successful-run.png)
+7. Monitor the pipeline in Azure DevOps and wait for it to complete.
+
+![Monitor Pipeline](docs/monitor-pipeline.png)
+
+8. Successful run of pipeline will look like this:
+
+   **Overall**
+   ![Successful run of pipeline](docs/successful-pipeline-1.png)
+
+   **Stage 1 - Build and push the docker images to ECR - Successful run of pipeline**
+   ![Stage1 - Build Application](docs/successful-pipeline-stage-1.png)
+
+   **Stage 2 - Deplpy the infrastructure and application - Successful run of pipeline**
+   ![Stage2 - Terraform Operations](docs/successful-pipeline-stage-2.png)
+
+9. You can see the successful run of the pipeline generates the artifacts in the artifacts folder , Terraform plan in [plain text](docs/plan.txt)
+.
+
+![Click on Artifacts](docs/artifacts.png)
+![View Artifacts - Plan File](docs/artifacts2.png)
+
+
+**Note** : I am not deploying the infrastructure here purposly as it will cost money , I have already tested it  and the results are attached as well , refer section for results - Running manually on your local machine.
 
 
 
-## Running manually
+
+
+
+## Running manually on your local machine
 
 ### Prerequisites
 1. Install the following tools:
@@ -121,6 +147,10 @@ terraform init # Initialize the Terraform backend
 terraform plan # Plan the infrastructure
 terraform apply # Apply the infrastructure
 ```
+ Apply output:
+ ![alt text](docs/apply-output.png)
+
+
 
 4. Access the application on web browser using ALB DNS name
 ```
@@ -145,6 +175,3 @@ terraform destroy # Destroy the infrastructure
 chmod +x ./destroy-ecr-images.sh
 ./destroy-ecr-images.sh
 ```
-
-## References
-https://ecsworkshop.com/secrets/02-overview/

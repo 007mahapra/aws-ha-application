@@ -13,6 +13,7 @@ connection.connect()
 connection.query(`use ${process.env.RDS_DB_NAME};`)
 
 let app = express()
+app.use(express.json()); // Middleware to parse JSON bodies
 
 app.get('/', async (req, res) => {
   res.send({ message: 'This is App Tier running on '})
@@ -29,7 +30,31 @@ app.get('/users', async (req, res) => {
     if (error) throw error;
     res.send(results)
   });
-  
+})
+
+app.post('/users', async (req, res) => {
+  const { lastname, firstname, email } = req.body;
+  connection.query('INSERT INTO users (lastname, firstname, email) VALUES (?, ?, ?)', [lastname, firstname, email], function (error, results) {
+    if (error) throw error;
+    res.send({ message: 'User created', id: results.insertId });
+  });
+})
+
+app.put('/users/:id', async (req, res) => {
+  const { id } = req.params;
+  const { lastname, firstname, email } = req.body;
+  connection.query('UPDATE users SET lastname = ?, firstname = ?, email = ? WHERE id = ?', [lastname, firstname, email, id], function (error) {
+    if (error) throw error;
+    res.send({ message: 'User updated' });
+  });
+})
+
+app.delete('/users/:id', async (req, res) => {
+  const { id } = req.params;
+  connection.query('DELETE FROM users WHERE id = ?', [id], function (error) {
+    if (error) throw error;
+    res.send({ message: 'User deleted' });
+  });
 })
 
 // Custom 404 route not found handler

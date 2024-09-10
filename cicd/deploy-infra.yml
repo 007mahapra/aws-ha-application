@@ -1,0 +1,37 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  tfStateFile: 'terraform.tfstate'
+
+steps:
+- task: TerraformInstaller@0
+  inputs:
+    terraformVersion: '0.15.5'
+
+- script: |
+    terraform init -input=false
+  workingDirectory: 'terraform'
+
+- script: |
+    terraform plan -input=false -out=tfplan
+  workingDirectory: 'terraform'
+
+- script: |
+    terraform apply -input=false tfplan
+  workingDirectory: 'terraform'
+  condition: succeededOrFailed()
+
+- script: |
+    terraform apply -input=false -state=$(Build.SourcesDirectory)/terraform/$tfStateFile tfplan
+  workingDirectory: 'terraform'
+  condition: failed()
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'terraform/$tfStateFile'
+    ArtifactName: 'terraform-state'
+    publishLocation: 'Container'

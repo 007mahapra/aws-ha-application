@@ -15,7 +15,7 @@ connection.query(`use ${process.env.RDS_DB_NAME};`)
 let app = express()
 
 app.get('/', async (req, res) => {
-  res.send({ message: 'hello world'})
+  res.send({ message: 'This is App Tier running on '})
 })
 
 app.get('/init', async (req, res) => {

@@ -1,3 +1,4 @@
+# Find Amazon Linux 2 AMI  from the region 
 data "aws_ami" "amazon_linux_2" {
   most_recent = true
 
@@ -77,7 +78,7 @@ resource "aws_launch_template" "presentation_tier" {
     name = aws_iam_instance_profile.ec2_ecr_connection.name
   }
 
-  instance_type = "t2.nano"
+  instance_type = var.ec2_instance_type
   image_id      = data.aws_ami.amazon_linux_2.id
 
   network_interfaces {
@@ -112,7 +113,7 @@ resource "aws_launch_template" "application_tier" {
     name = aws_iam_instance_profile.ec2_ecr_connection.name
   }
 
-  instance_type = "t2.nano"
+  instance_type = var.ec2_instance_type
   image_id      = data.aws_ami.amazon_linux_2.id
 
   network_interfaces {

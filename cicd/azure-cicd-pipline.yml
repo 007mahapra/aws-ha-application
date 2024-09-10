@@ -113,7 +113,7 @@ stages:
               wget https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
           
               # Unzip and move the binary to /usr/local/bin
-              unzip terraform_1.5.0_linux_amd64.zip
+              unzip terraform_1.5.7_linux_amd64.zip
           
               # Move Terraform to a directory in the system PATH
               sudo mv terraform /usr/local/bin/
@@ -126,7 +126,9 @@ stages:
             displayName: 'Install Terraform'
 
           # Terraform Init
-          - script: terraform init
+          - script: |
+              cd terraform/
+              terraform init
             displayName: 'Terraform Init'
             env:
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
@@ -134,15 +136,18 @@ stages:
               AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
           # Terraform Validate
-          - script: terraform validate
+          - script: |
+              cd terraform/
+              terraform validate
             displayName: 'Terraform Validate'
             env:
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
-          # Terraform Plan 
+          # Terraform Plan
           - script: |
+              cd terraform/
               terraform plan -out=tfplan
               terraform show -no-color tfplan > plan.txt
             displayName: 'Terraform Plan'
@@ -150,12 +155,14 @@ stages:
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
-            # Publish the plan file
-          - publish: plan.txt
+          # Publish the plan file
+          - publish: terraform/plan.txt
             artifact: terraform-plan
 
           # # Apply Terraform Plan
-          # - script: terraform apply -auto-approve tfplan
+          # - script: |
+          #     cd terraform/
+          #     terraform apply -auto-approve tfplan
           #   displayName: 'Terraform Apply'
           #   continueOnError: true
           #   env:
@@ -165,6 +172,7 @@ stages:
 
           # # Handle Apply Failure
           # - script: |
+          #     cd terraform/
           #     if [ $? -ne 0 ]; then
           #       echo "Apply failed, running destroy"
           #       terraform destroy -auto-approve || true

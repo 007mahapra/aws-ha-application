@@ -36,8 +36,7 @@ stages:
           # Login to AWS ECR
           - script: |
               echo "Logging in to AWS ECR"
-              echo `aws sts get-caller-identity --query Account --output text --region $(REGION)`
-              ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+              ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text --region $(REGION))
               aws ecr get-login-password --region $(REGION) | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.$(REGION).amazonaws.com
             displayName: 'Login to AWS ECR'
             env:

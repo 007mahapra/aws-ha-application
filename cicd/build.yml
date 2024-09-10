@@ -83,7 +83,7 @@ stages:
           # Build and push presentation-tier Docker image
           - script: |
               echo "Building and pushing presentation-tier Docker image"
-              cd ../presentation-tier/
+              cd presentation-tier/
 
               ECR_PRESENTATION_TIER_REPO=$(aws ecr describe-repositories --repository-names $(ECR_PRESENTATION_REPO_NAME) | jq -r '.repositories[0].repositoryUri')
               docker build -t ha-app-presentation-tier .

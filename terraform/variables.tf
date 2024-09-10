@@ -22,6 +22,11 @@ variable "ecr_presentation_tier" {
   type    = string
 }
 
+variable "ec2_instance_type" {
+  type = string
+}
+
+
 # rds variables
 variable "rds_db_admin" {
 }
@@ -46,3 +51,8 @@ variable "instance_class" {
 
 variable "db_engine" {
 }
+
+variable "db_secret_name" {
+  default = "rds-secret"
+}
+

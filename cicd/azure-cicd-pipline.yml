@@ -106,9 +106,22 @@ stages:
           # Install Terraform 
           - script: |
               echo "Installing Terraform"
-              wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip
+              #sudo apt-get update -y
+              sudo apt-get install -y unzip wget
+          
+              # Download Terraform binary - Mahaveer version 1.5.7 tested locally 
+              wget https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
+          
+              # Unzip and move the binary to /usr/local/bin
               unzip terraform_1.5.0_linux_amd64.zip
+          
+              # Move Terraform to a directory in the system PATH
               sudo mv terraform /usr/local/bin/
+          
+              # Ensure Terraform is executable
+              sudo chmod +x /usr/local/bin/terraform
+          
+              # Check Terraform version to confirm installation
               terraform --version
             displayName: 'Install Terraform'
 
